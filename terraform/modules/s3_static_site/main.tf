@@ -12,10 +12,6 @@ resource "aws_s3_bucket_website_configuration" "static_site_config" {
   index_document {
     suffix = "index.html"
   }
-
-  error_document {
-    key = "error.html"
-  }
 }
 
 resource "aws_s3_object" "index_html" {
