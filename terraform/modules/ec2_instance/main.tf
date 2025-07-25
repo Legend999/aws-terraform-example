@@ -9,11 +9,6 @@ resource "aws_instance" "web" {
     Name = var.name
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              apt-get update -y
-              apt-get install -y nginx
-              systemctl start nginx
-              EOF
+  user_data = file("${path.module}/user_data.sh")
 }
 
