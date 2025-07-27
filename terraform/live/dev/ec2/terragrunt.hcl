@@ -8,5 +8,6 @@ inputs = {
   security_group_id = "sg-0a5be87136b5408be"
   key_name          = "dev-key"
   name              = "dev-nginx"
+  private_key_path = "~/.ssh/dev-key.pem"
 }
 
