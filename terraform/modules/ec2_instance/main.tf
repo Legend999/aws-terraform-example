@@ -14,6 +14,10 @@ resource "aws_instance" "web" {
 }
 
 resource "null_resource" "deploy_script" {
+  triggers = {
+    always_run = timestamp()
+  }
+
   provisioner "file" {
     source      = "deploy.sh"
     destination = "/home/ubuntu/deploy.sh"
