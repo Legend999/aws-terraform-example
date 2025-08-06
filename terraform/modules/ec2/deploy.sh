@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eux
+
 cloud-init status --wait
 
 cd /home/ubuntu

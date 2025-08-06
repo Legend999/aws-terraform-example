@@ -5,7 +5,7 @@
 </head>
 <body>
 <h1>Shorten your URL</h1>
-<input type="text" id="url" placeholder="Enter URL" />
+<input id="url" placeholder="https://youtube.com/" type="text"/>
 <button onclick="shorten()">Shorten</button>
 <p id="result"></p>
 
@@ -14,8 +14,8 @@
         const url = document.getElementById('url').value;
         const res = await fetch('/shorten', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url})
         });
         const data = await res.json();
         document.getElementById('result').innerText = data.shortUrl || data.error;
