@@ -5,3 +5,4 @@ usermod -aG docker ubuntu
 newgrp docker
 systemctl start docker
 systemctl enable docker
+reboot
