@@ -8,6 +8,15 @@
 <input id="url" placeholder="https://youtube.com/" type="text"/>
 <button onclick="shorten()">Shorten</button>
 <p id="result"></p>
+<p id="visit-count"></p>
+
+<script>
+    fetch('/visit', {method: 'POST'})
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('visit-count').innerText = `Odwiedzono ${data.total} razy`;
+        });
+</script>
 
 <script>
     async function shorten() {

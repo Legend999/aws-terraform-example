@@ -47,8 +47,7 @@ await initRds();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/", async (req, res) => {
+app.use(async (req, res, next) => {
     try {
         await rdsPool.query(`
             CREATE TABLE IF NOT EXISTS visits
@@ -66,12 +65,19 @@ app.get("/", async (req, res) => {
         `);
 
         await rdsPool.query("INSERT INTO visits () VALUES ()");
+    } catch (err) {
+        console.error("RDS error (middleware):", err);
+    }
+    next();
+});
 
+app.post("/visit", async (req, res) => {
+    try {
         const [rows] = await rdsPool.query("SELECT COUNT(*) AS total FROM visits");
-        res.send(`Odwiedzono ${rows[0].total} razy`);
+        res.json({total: rows[0].total});
     } catch (err) {
         console.error("RDS error:", err);
-        res.status(500).send("Błąd bazy danych");
+        res.status(500).json({error: "Błąd bazy danych"});
     }
 });
 
