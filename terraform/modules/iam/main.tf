@@ -14,7 +14,7 @@ resource "aws_iam_role" "ec2_role" {
 }
 
 resource "aws_iam_policy" "dynamodb_policy" {
-  name   = "dynamodb-access"
+  name = "dynamodb-access"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -38,4 +38,21 @@ resource "aws_iam_role_policy_attachment" "ecs_attach" {
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2-dynamodb-profile"
   role = aws_iam_role.ec2_role.name
+}
+
+resource "aws_iam_policy" "secrets_policy" {
+  name = "secrets-access"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action   = ["secretsmanager:GetSecretValue"],
+      Effect   = "Allow",
+      Resource = var.rds_secret_arn
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "secrets_attach" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.secrets_policy.arn
 }

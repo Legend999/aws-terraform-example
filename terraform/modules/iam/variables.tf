@@ -5,3 +5,5 @@ variable "role_name" {
 variable "dynamodb_table_arn" {
   type = string
 }
+
+variable "rds_secret_arn" {}

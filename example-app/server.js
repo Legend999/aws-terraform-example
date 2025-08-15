@@ -48,6 +48,33 @@ await initRds();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/", async (req, res) => {
+    try {
+        await rdsPool.query(`
+            CREATE TABLE IF NOT EXISTS visits
+            (
+                id
+                INT
+                AUTO_INCREMENT
+                PRIMARY
+                KEY,
+                ts
+                TIMESTAMP
+                DEFAULT
+                CURRENT_TIMESTAMP
+            )
+        `);
+
+        await rdsPool.query("INSERT INTO visits () VALUES ()");
+
+        const [rows] = await rdsPool.query("SELECT COUNT(*) AS total FROM visits");
+        res.send(`Odwiedzono ${rows[0].total} razy`);
+    } catch (err) {
+        console.error("RDS error:", err);
+        res.status(500).send("Błąd bazy danych");
+    }
+});
+
 // --- DynamoDB endpoint ---
 app.post("/shorten", async (req, res) => {
     const {url} = req.body;
@@ -78,30 +105,6 @@ app.get("/:id", async (req, res) => {
     } catch (err) {
         console.error("DynamoDB error:", err);
         res.status(500).send("Internal Server Error");
-    }
-});
-
-// --- RDS endpoint ---
-app.get("/visits", async (req, res) => {
-    try {
-        await rdsPool.query(`CREATE TABLE IF NOT EXISTS visits
-                             (
-                                 id
-                                 INT
-                                 AUTO_INCREMENT
-                                 PRIMARY
-                                 KEY,
-                                 ts
-                                 TIMESTAMP
-                                 DEFAULT
-                                 CURRENT_TIMESTAMP
-                             )`);
-        await rdsPool.query("INSERT INTO visits () VALUES ()");
-        const [rows] = await rdsPool.query("SELECT COUNT(*) AS total FROM visits");
-        res.send(`Odwiedzono ${rows[0].total} razy`);
-    } catch (err) {
-        console.error("RDS error:", err);
-        res.status(500).send("Błąd bazy danych");
     }
 });
 
