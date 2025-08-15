@@ -34,10 +34,10 @@ let rdsPool;
 async function initRds() {
     const secret = await getDbConfig();
     rdsPool = mysql.createPool({
-        host: secret.host,
+        host: 'dev-db.cpcosc6skq3w.eu-north-1.rds.amazonaws.com',
         user: secret.username,
         password: secret.password,
-        database: secret.dbname,
+        database: 'app',
         waitForConnections: true,
         connectionLimit: 5
     });

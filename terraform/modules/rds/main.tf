@@ -1,3 +1,7 @@
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+}
+
 resource "aws_security_group" "rds_sg" {
   name        = var.security_group_name
   description = "Security group for RDS"
@@ -7,7 +11,7 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = []
+    cidr_blocks = [data.aws_vpc.selected.cidr_block]
   }
 
   egress {
