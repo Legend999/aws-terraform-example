@@ -5,6 +5,7 @@ import {fileURLToPath} from "url";
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb";
 import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb";
 import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
+import {CloudWatchClient, PutMetricDataCommand} from "@aws-sdk/client-cloudwatch";
 import mysql from "mysql2/promise";
 
 const app = express();
@@ -14,12 +15,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const EC2_HOST = process.env.EC2_HOST || "localhost";
-
-// --- DynamoDB config ---
-const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({region: "eu-north-1"}));
 const TABLE_NAME = "urls";
 
-// --- MySQL (RDS) config ---
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({region: "eu-north-1"}));
+const cloudwatch = new CloudWatchClient({region: "eu-north-1"});
+
+async function sendMetric(metricName, value) {
+    try {
+        const command = new PutMetricDataCommand({
+            Namespace: 'URLShortener',
+            MetricData: [{
+                MetricName: metricName,
+                Value: value,
+                Unit: 'Count',
+                Timestamp: new Date()
+            }]
+        });
+
+        await cloudwatch.send(command);
+        console.log(`Sent metric: ${metricName} = ${value}`);
+    } catch (error) {
+        console.error('Failed to send metric:', error);
+    }
+}
+
 async function getDbConfig() {
     const smClient = new SecretsManagerClient({region: "eu-north-1"});
     const command = new GetSecretValueCommand({
@@ -77,11 +96,10 @@ app.post("/visit", async (req, res) => {
         res.json({total: rows[0].total});
     } catch (err) {
         console.error("RDS error:", err);
-        res.status(500).json({error: "Błąd bazy danych"});
+        res.status(500).json({error: "Database error"});
     }
 });
 
-// --- DynamoDB endpoint ---
 app.post("/shorten", async (req, res) => {
     const {url} = req.body;
     if (!url) return res.status(400).json({error: "URL is required"});
@@ -93,6 +111,9 @@ app.post("/shorten", async (req, res) => {
             TableName: TABLE_NAME,
             Item: {short_id: id, url}
         }));
+
+        await sendMetric('URLsShortened', 1);
+
         res.json({shortUrl: `http://${EC2_HOST}/${id}`});
     } catch (err) {
         console.error("DynamoDB error:", err);
